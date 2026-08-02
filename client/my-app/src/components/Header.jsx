@@ -13,6 +13,9 @@ const Header = () => {
         <Link to="/login" className="btn">
           Войти
         </Link>
+        <Link to="/users" className="btn">
+          Все пользователи
+        </Link>
       </div>
     </header>
   );
