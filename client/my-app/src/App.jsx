@@ -4,6 +4,7 @@ import FormLogIn from "./pages/FormLogIn";
 import Users from "./pages/Users";
 
 import { Routes, Route } from "react-router";
+import User from "./pages/User";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/register" element={<FormSignIn />} />
         <Route path="/login" element={<FormLogIn />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User />} />
       </Routes>
     </>
   );

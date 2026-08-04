@@ -28,6 +28,33 @@ app.get('/api/users',  async (req,res) => {
 
 //Маршрут 2:  Получить одного пользователя
 
+// Маршрут 2: Получить одного пользователя
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        
+        // Проверка, что ID передан
+        if (!id) {
+            return res.status(400).json({ message: 'ID пользователя не указан' });
+        }
+
+        // Используем async/await без колбэка
+        const [rows] = await db.query('SELECT id, username, email FROM users WHERE id = ?', [id]);
+        
+        // Проверяем, найден ли пользователь
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Пользователь не найден' });
+        }
+
+        // Возвращаем первого (и единственного) пользователя
+        res.json({ data: rows[0] });
+        
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ message: `Ошибка сервера: ${error.message}` });
+    }
+});
+
 // Маршрут 3: Регистрация пользователя
 app.post('/api/register', async (req,res) => {
     try {

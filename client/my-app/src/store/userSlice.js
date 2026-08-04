@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
 
 
  export const getAllUsers = createAsyncThunk(
@@ -56,13 +56,37 @@ export const createUser = createAsyncThunk(
     }
 )
 
+export const getOneUser = createAsyncThunk(
+    'users/getOneUser',
+    async function ({id}, {_,rejectWithValue}) {
+        try {
+
+            const response = await fetch(`/api/users/${id}`)
+
+            if(!response.ok) {
+                let message = `Произошла ошибка ${response.status} ${response.statusText}`
+                throw new Error(message)
+            }
+
+            const data = await response.json()
+
+            return data.data
+            
+        } catch (error) {
+            return rejectWithValue(error.message)
+        }
+        
+    }
+)
+
 const userSlice = createSlice({
     name:'users',
     initialState:{
         users:[],
         status:null,
         error:null,
-        isAuth: false
+        isAuth: false,
+        currentUser: null
     },
     extraReducers:(builder) => {
         builder
@@ -83,6 +107,14 @@ const userSlice = createSlice({
             state.users = action.payload
         })
         .addCase(createUser.rejected, (state,action) => {
+            state.status = 'Отклонен'
+            state.error = action.payload
+        })
+        .addCase(getOneUser.fulfilled,(state,action) => {
+            state.status = 'Успешно'
+            state.currentUser = action.payload
+        })
+        .addCase(getOneUser.rejected, (state,action) => {
             state.status = 'Отклонен'
             state.error = action.payload
         })
