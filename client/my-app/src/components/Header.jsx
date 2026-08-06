@@ -16,6 +16,9 @@ const Header = () => {
         <Link to="/users" className="btn">
           Все пользователи
         </Link>
+        <Link to="/profile" className="btn">
+          Профиль
+        </Link>
       </div>
     </header>
   );

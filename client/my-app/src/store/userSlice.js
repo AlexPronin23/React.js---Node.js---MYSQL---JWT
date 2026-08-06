@@ -6,7 +6,9 @@ import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
     async function (_, {rejectWithValue}) {
         try {
 
-            const response = await fetch('/api/users')
+            const response = await fetch('/api/users',{
+                credentials:'include'
+            })
 
             if(!response.ok) {
                 let message = `Произошла ошибка ${response.status} ${response.statusText}`
@@ -30,6 +32,7 @@ export const createUser = createAsyncThunk(
             
             const response = await fetch ('/api/register', {
                 method:'POST',
+                credentials:'include',
                 headers: {
                     'Content-type': 'application/json'
                 },
@@ -61,7 +64,9 @@ export const getOneUser = createAsyncThunk(
     async function ({id}, {_,rejectWithValue}) {
         try {
 
-            const response = await fetch(`/api/users/${id}`)
+            const response = await fetch(`/api/users/${id}`,{
+                 credentials:'include'
+            })
 
             if(!response.ok) {
                 let message = `Произошла ошибка ${response.status} ${response.statusText}`
@@ -72,6 +77,85 @@ export const getOneUser = createAsyncThunk(
 
             return data.data
             
+        } catch (error) {
+            return rejectWithValue(error.message)
+        }
+        
+    }
+)
+
+export const loginUser = createAsyncThunk(
+    'user/loginUser',
+    async function ({username,password}, {_,rejectWithValue}) {
+
+        try {
+            const response = await fetch('/api/login', {
+                method:'POST',
+                credentials:'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify({
+                    username:username,
+                    password:password
+                })
+            })
+
+            if(!response.ok) {
+                let message = `Произошла ошибка ${response.status} ${response.statusText}`
+                throw new Error(message)
+            }
+
+            const data = await response.json()
+
+            return data.user
+
+        } catch (error) {
+
+            return rejectWithValue(error.message)
+            
+        }
+        
+    }
+)
+
+export const logoutUser = createAsyncThunk(
+    'users/logoutUser',
+    async function (_, { rejectWithValue }) {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include' // Отправляем cookies
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка выхода');
+            }
+
+            return true;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const getProfile = createAsyncThunk(
+    'user/getProfile',
+    async function (_,{rejectWithValue}) {
+        try {
+            const response = await fetch('/api/profile', {
+                credentials:"include"
+            })
+            
+             if(!response.ok) {      
+                let message = `Произошла ошибка ${response.status} ${response.statusText}`
+                throw new Error(message)
+            }
+
+            const data = await response.json()
+
+            return data.user
+
         } catch (error) {
             return rejectWithValue(error.message)
         }
@@ -118,6 +202,40 @@ const userSlice = createSlice({
             state.status = 'Отклонен'
             state.error = action.payload
         })
+        .addCase(loginUser.fulfilled, (state,action) => {
+            state.status = 'Успешно'
+            state.isAuth = true
+            state.currentUser = action.payload
+        })
+        .addCase(loginUser.rejected, (state,action) => {
+            state.status = 'Отклонен'
+            state.error = action.payload
+            state.isAuth = false
+        })
+        .addCase(logoutUser.fulfilled, (state,action) => {
+            state.status = 'Успешно'
+            state.isAuth = false
+            state.currentUser = null
+        })
+        .addCase(logoutUser.rejected,(state,action) => {
+            state.status = 'Отклонен'
+            state.error = action.payload
+        })
+         .addCase(getProfile.pending, (state) => {
+            state.status = 'Загрузка';
+            state.error = null;
+        })
+        .addCase(getProfile.fulfilled, (state, action) => {
+                state.status = 'Успешно';
+                state.isAuth = true;
+                state.currentUser = action.payload;
+            })
+        .addCase(getProfile.rejected, (state, action) => {
+                state.status = 'Отклонен';
+                state.error = action.payload;
+                state.isAuth = false;
+                state.currentUser = null;
+            })
     }
 })
 
